@@ -1,3 +1,32 @@
+MEMO FOR ME
+===========
+* for feature extraction,
+  - install torch
+  - install [torch audio](https://github.com/soumith/lua---audio): 
+    - `$ luarocks install https://raw.githubusercontent.com/soumith/lua---audio/master/audio-0.1-0.rockspec`
+  - install torch [hdf5](https://colberg.org/lua-hdf5/INSTALL.html) (beware: there is another lua hdf5 by deepmind. this repo uses the former.)  -> WHAt? weird, anyway the grammar of this repo's hdf == one from deepmind.
+    - `$ luarocks install --local hdf5`
+  - Then, cuz my audio files are [-1, 1] normalized and in hdf files.
+    - Instead of `audio.load(line)` and etc,
+```lua
+audio_file = hdf5.open(line, 'r')
+sound = audio_file:read('x'):all()
+-- log_time = audio_file:read('log_time'):all()
+-- start_sp = log_time[2] * 12000
+-- end_sp = start_sp + log_time[3] * 12000
+
+audio_file:close()
+-- and make it to [256, 256]
+if sound:size(2) > 1 then sound = sound:select(2,1):clone() end -- select first channel (mono)
+-- pick up a subarray
+sound = sound[{{1, 120000}}]
+sound:mul(2^8)
+sound = sound:view(1, 1, -1, 1)
+sound = sound:cuda() 
+-- and blah blah.
+
+```  
+
 SoundNet
 ========
 

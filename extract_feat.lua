@@ -45,6 +45,8 @@ function file_exists(name)
   if f~=nil then io.close(f) return true else return false end
 end
 
+audio_path = '/home/keunwoo/datasets/data_youtube/' -- for my ubuntu desktop
+
 for line in io.lines(opt.list) do
   local out_file = line .. '.soundnet.h5'
 
@@ -53,11 +55,18 @@ for line in io.lines(opt.list) do
 
   else
     print('Read ' .. line)
-    local sound = audio.load(line)
+    -- local sound = audio.load(line)
+    audio_filepath = audio_path .. line
+    audio_file = hdf5.open(line, 'r')
+    sound = audio_file:read('x'):all()
+
+    audio_file:close()
 
     -- data preprocessing
     if sound:size(2) > 1 then sound = sound:select(2,1):clone() end -- select first channel (mono)
-    sound:mul(2^-23)                                        -- make range [-256, 256]
+    -- sound:mul(2^-23)                                        -- make range [-256, 256]
+    sound = sound[{{1, 120000}}]
+    sound:mul(2^8)
     sound = sound:view(1, 1, -1, 1)                         -- shape to BatchSize x 1 x DIM x 1
     sound = sound:cuda()                                    -- ship to GPU
 
