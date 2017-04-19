@@ -57,13 +57,14 @@ for line in io.lines(opt.list) do
     print('Read ' .. line)
     -- local sound = audio.load(line)
     audio_filepath = audio_path .. line
-    audio_file = hdf5.open(line, 'r')
+    print('actually, read ' .. audio_filepath)
+    audio_file = hdf5.open(audio_filepath, 'r')
     sound = audio_file:read('x'):all()
 
     audio_file:close()
 
     -- data preprocessing
-    if sound:size(2) > 1 then sound = sound:select(2,1):clone() end -- select first channel (mono)
+    -- if sound:size(2) > 1 then sound = sound:select(2,1):clone() end -- select first channel (mono)
     -- sound:mul(2^-23)                                        -- make range [-256, 256]
     sound = sound[{{1, 120000}}]
     sound:mul(2^8)
